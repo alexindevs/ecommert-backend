@@ -42,16 +42,15 @@ export default class UserModel {
     });
   }
 
-  async checkPassword(userId: number, password: string): Promise<boolean> {
-    try {
-      const user = await this.getUserById(userId);
-      if (!user) {
-        return false;
+  async getUserByEmail(email: string): Promise<PrismaUser | null> {
+      try {
+        const user = await this.prisma.user.findUnique({
+          where: { email },
+        });
+        return user;
+      } catch (error) {
+        throw error;
       }
-      return bcrypt.compareSync(password, user.password);
-    } catch (error) {
-      throw error;
-    }
   }
 
   async updateUser(userId: number, user: Partial<PrismaUser>): Promise<PrismaUser | null> {
