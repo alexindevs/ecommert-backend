@@ -1,16 +1,14 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { Request } from "express"; // Assuming you're using Express
-import { PrismaClient, User as PrismaUser } from '@prisma/client';
+import { User as PrismaUser } from '@prisma/client';
 import * as schema from './user.interface';
 import UserModel from "./user.model";
 
 export class AuthService {
-  private prisma: PrismaClient;
-  private userModel: UserModel;
-
+  private userModel: UserModel; 
+  private RefreshTokenGenerator: typeof schema.RefreshToken;
   constructor() {
-    this.prisma = new PrismaClient();
     this.userModel = new UserModel();
   }
 
@@ -33,6 +31,7 @@ export class AuthService {
 
     // Create the user
     const newUser = await this.userModel.addUser(user);
+
     return newUser;
   }
 
