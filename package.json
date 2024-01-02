@@ -10,11 +10,13 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@types/bcrypt": "^5.0.2",
     "@types/body-parser": "^1.19.5",
     "@types/express": "^4.17.21",
     "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/sequelize": "^4.28.19",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
