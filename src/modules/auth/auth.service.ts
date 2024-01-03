@@ -67,7 +67,7 @@ export class AuthService {
         throw new Error("Invalid credentials");
     }
 
-    if (await this.checkPassword(user.id, password)) {
+    if (!await this.checkPassword(user.id, password)) {
       throw new Error("Invalid credentials");
     } else {
       let RefreshToken = await RefreshTokenModel.getTokenByUserId(user.id);

@@ -10,8 +10,10 @@
       "resolveJsonModule": true
     },
     "include": [
-      "./src/**/*.ts"                                     // Specify TypeScript files to include
-, "src/server.ts"    ],
+      "./src/**/**/*.ts",
+      "./src/**/*.ts",                                     // Specify TypeScript files to include
+      "src/server.ts"    
+    ],
     "exclude": [
       "./dist"                                            // Specify directories/files to exclude from compilation
     ]
