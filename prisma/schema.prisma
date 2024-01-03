@@ -30,6 +30,7 @@ model User {
   // reviews     Review[]
   
   refreshTokens RefreshToken[]
+  profile       Profile?
 }
 
 model RefreshToken {
@@ -41,4 +42,19 @@ model RefreshToken {
 
   // Relationships
   user       User      @relation(fields: [userId], references: [id])
+}
+
+model Profile {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique
+  address     String
+  city        String
+  postalCode  String
+  country     String
+  phoneNumber String
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @default(now()) @db.Timestamp(6)
+
+  // Relationships
+  user        User      @relation(fields: [userId], references: [id])
 }

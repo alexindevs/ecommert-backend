@@ -83,6 +83,33 @@ class RefreshTokenModel {
       console.error('Error deleting token:', error);
     }
   }
+
+  static async updateToken(tokenId: number): Promise<PrismaRefreshToken | null> {
+    try {
+      const oldToken = await prisma.refreshToken.findUnique({
+        where: {
+          id: tokenId,
+        },
+      });
+      if (!oldToken) {
+        return null;
+      }
+      const userId = oldToken.userId;
+      const newToken = jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
+      const token = await prisma.refreshToken.update({
+        where: {
+          id: tokenId,
+        },
+        data: {
+          token: newToken,
+        },
+      });
+      return token;
+    } catch (error) {
+      console.error('Error updating token:', error);
+      return null;
+    }
+  }
 }
 
 export default RefreshTokenModel;

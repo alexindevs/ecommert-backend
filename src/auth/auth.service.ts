@@ -39,7 +39,6 @@ export class AuthService {
         if (!newUser) {
         throw new Error("Failed to create user.");
         }
-
         const RefreshToken = await RefreshTokenModel.createToken(newUser.id);
         const AccessToken = await ATG.generate(newUser.id);
         return {user: newUser, token: AccessToken};
@@ -71,9 +70,30 @@ export class AuthService {
     if (await this.checkPassword(user.id, password)) {
       throw new Error("Invalid credentials");
     } else {
-      const RefreshToken = await RefreshTokenModel.createToken(user.id);
+      let RefreshToken = await RefreshTokenModel.getTokenByUserId(user.id);
+        if (!RefreshToken) {
+          RefreshToken = await RefreshTokenModel.createToken(user.id);
+        } else {
+          RefreshToken = await RefreshTokenModel.updateToken(RefreshToken.id);
+        }
       const AccessToken = await ATG.generate(user.id);
       return {user: user, token: AccessToken};
+    }
+  }
+
+  async logout(userId: number): Promise<PrismaUser | null> {
+    try {
+      const refreshToken = await RefreshTokenModel.getTokenByUserId(userId);
+      const user = await this.userModel.getUserById(userId);
+      if (refreshToken) {
+        const deleteRefreshToken = await RefreshTokenModel?.destroyToken(refreshToken.id);
+      } else {
+        return null;
+      }
+      return user;
+    }
+    catch (error) {
+      throw error;
     }
   }
 
@@ -106,5 +126,48 @@ export class AuthService {
       throw error;
     }
   }
-  
+
+  async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<PrismaUser | null> {
+    try {
+      const user = await this.userModel.getUserById(userId);
+      if (!user) {
+        return null;
+      }
+      if (!await this.checkPassword(user.id, oldPassword)) {
+        throw new Error("Invalid password");
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const updatedUser = await this.userModel.updateUser(userId, { password: hashedPassword });
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    try {
+      const user = await this.userModel.getUserByEmail(email);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Generate a jwt to attach to the link to send to the user through their email
+      const token = ATG.generateForVerification(user.id);
+
+      // Send the link to the user's email, have it redirect to the frontend, and have the frontend pass it back to the backend
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async resetPassword(userId: number, token: string, newPassword: string): Promise<PrismaUser | null> {
+    try {
+      const verifiedToken = ATG.checkTokenValidity(token);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const updatedUser = await this.userModel.updateUser(userId, { password: hashedPassword });
+      return updatedUser;
+    } catch (error) {
+      throw new Error("The verification process failed. Please try again.");
+    }
+  }
 }
