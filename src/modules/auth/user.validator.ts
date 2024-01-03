@@ -6,8 +6,8 @@ export const userSchema = Joi.object({
     password: Joi.string().required(),
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
-    isAdmin: Joi.boolean(),
-    isBlocked: Joi.boolean(),
+    isAdmin: Joi.boolean().required(),
+    isBlocked: Joi.boolean().required(),
     profileImage: Joi.string(),
     otp: Joi.string(),
 })

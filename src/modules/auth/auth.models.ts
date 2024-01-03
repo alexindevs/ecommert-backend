@@ -1,8 +1,100 @@
-import {  PrismaClient, RefreshToken as PrismaRefreshToken } from '@prisma/client';
+import { PrismaClient, User as PrismaUser, RefreshToken as PrismaRefreshToken } from '@prisma/client';
+import * as schema from './user.interface';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const jwtSecret = process.env.JWT_SECRET || 'secret';
+
+class UserModel {
+  private prisma: PrismaClient;
+
+  constructor() {
+    this.prisma = new PrismaClient();
+  }
+
+  /**
+   * Adds a new user to the database.
+   *
+   * @param {schema.UserWithoutId} user - The user object without an ID.
+   * @return {Promise<PrismaUser | null>} A promise that resolves to the newly created user object, or null if an error occurs.
+   */
+  async addUser(user: schema.UserWithoutId): Promise<PrismaUser | null> {
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          username: user.username,
+          email: user.email,
+          password: user.password,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          isAdmin: user.isAdmin,
+          isBlocked: user.isBlocked,
+          profileImage: user.profileImage || null,
+          otp: user.otp || null,
+        },
+      });
+      return newUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getUserById(userId: number): Promise<PrismaUser | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+  }
+
+  async getUserByUsername(username: string): Promise<PrismaUser | null> {
+    return this.prisma.user.findUnique({
+      where: { username },
+    });
+  }
+
+  async getUserByEmail(email: string): Promise<PrismaUser | null> {
+      try {
+        const user = await this.prisma.user.findUnique({
+          where: { email },
+        });
+        return user;
+      } catch (error) {
+        throw error;
+      }
+  }
+
+  async updateUser(userId: number, user: Partial<PrismaUser>): Promise<PrismaUser | null> {
+    try {
+      const updatedUser = await this.prisma.user.update({
+        where: { id: userId },
+        data: user,
+      });
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const deletedUser = await this.prisma.user.delete({
+        where: { id: userId },
+      });
+      return deletedUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getAllUsers(): Promise<PrismaUser[]> {
+    try {
+      const users = await this.prisma.user.findMany();
+      return users;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
 
 class RefreshTokenModel {
   /**
@@ -112,4 +204,4 @@ class RefreshTokenModel {
   }
 }
 
-export default RefreshTokenModel;
+export { UserModel, RefreshTokenModel };

@@ -1,8 +1,7 @@
 import bcrypt from "bcrypt";
 import { User as PrismaUser } from '@prisma/client';
 import * as schema from './user.interface';
-import UserModel from "./user.model";
-import RefreshTokenModel from "./refreshToken.model";
+import { UserModel, RefreshTokenModel } from "./auth.models";
 import AccessTokenGenerator from "./accessToken.service";
 
 const ATG = new AccessTokenGenerator();
