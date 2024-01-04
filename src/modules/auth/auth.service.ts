@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { User as PrismaUser } from '@prisma/client';
+import jwt from "jsonwebtoken";
 import * as schema from './user.interface';
 import { UserModel, RefreshTokenModel } from "./auth.models";
 import AccessTokenGenerator from "./accessToken.service";
@@ -70,13 +71,16 @@ export class AuthService {
         return null;
       }
 
+      const jwtSecret = process.env.JWT_SECRET ||  "";
+
       // Check other (Routinr) codebases for how to do this
-      const resolvedUser = await verifiedToken.user;
-      const user = await this.userModel.getUserById(resolvedUser?.id);
+      const resolvedUser = jwt.verify(token, jwtSecret) as unknown as { user: PrismaUser, exp: number };
+      const user = await this.userModel.getUserById(resolvedUser?.user.id);
       if (!user) {
         return null;
       }
-      return user;
+      const verifiedUser = await this.userModel.verifyUser(user.id);
+      return verifiedUser;
     } catch (error) {
       throw new Error("The verification process failed. Please try again.");
     }

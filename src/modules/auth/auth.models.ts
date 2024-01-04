@@ -42,6 +42,20 @@ class UserModel {
     });
   }
 
+  async verifyUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId},
+        data: {
+          isVerified: true
+        }
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getUserByUsername(username: string): Promise<PrismaUser | null> {
     return this.prisma.user.findUnique({
       where: { username },

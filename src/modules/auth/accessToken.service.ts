@@ -56,9 +56,9 @@ class AccessTokenGenerator {
     }
   }
 
-   async checkTokenValidity(token: string): Promise< string | JwtPayload | boolean> {
+   async checkTokenValidity(token: string): Promise<any> {
     try {
-      const decoded = jwt.verify(token, this.secret);
+      const decoded = jwt.verify(token, this.secret) as any;
       return decoded;
     } catch (error) {
       console.error('Error checking token expiry:', error);
