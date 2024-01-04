@@ -72,8 +72,6 @@ export class AuthService {
       }
 
       const jwtSecret = process.env.JWT_SECRET ||  "";
-
-      // Check other (Routinr) codebases for how to do this
       const resolvedUser = jwt.verify(token, jwtSecret) as unknown as { user: PrismaUser, exp: number };
       const user = await this.userModel.getUserById(resolvedUser?.user.id);
       if (!user) {
@@ -176,8 +174,7 @@ export class AuthService {
       if (!user) {
         throw new Error("User not found");
       }
-
-      // Send the link to the user's email, have it redirect to the frontend, and have the frontend pass it back to the backend
+      await this.sendForgotPasswordEmail(user);
     } catch (error) {
       throw error;
     }
@@ -215,4 +212,21 @@ export class AuthService {
       throw error;
     }
   }
+
+  async sendForgotPasswordEmail(user: PrismaUser): Promise<void> {
+    try {
+      const token = ATG.generateForVerification(user.id);
+      const html = readFileSync("./src/templates/emails/forgotPassword.html", "utf8");
+      const url = `${process.env.FRONTEND_URL}/auth/forgot-password/${token}`;
+      const username = user.username;
+      const email = user.email;
+      await sendEmail(
+        email,
+        "Need a new password?",
+        html.replace("{{username}}", username).replace("{{platformName}}", platformName).replace("{{url}}", url));
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 }
