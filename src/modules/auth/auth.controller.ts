@@ -120,6 +120,44 @@ class AuthController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  blockUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.userId;
+      const result = await this.authService.blockUser(Number(userId));
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  unblockUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = req.params.userId;
+      const result = await this.authService.unblockUser(Number(userId));
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  getAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.authService.getAllUsers();
+      res.status(200).json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
+
 
 export default new AuthController();

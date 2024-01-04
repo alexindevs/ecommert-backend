@@ -104,6 +104,36 @@ class UserModel {
       throw error;
     }
   }
+
+  // Admin functions
+
+  async blockUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId},
+        data: {
+          isBlocked: true
+        }
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async unblockUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId},
+        data: {
+          isBlocked: false
+        }
+      });
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 class RefreshTokenModel {
@@ -212,6 +242,8 @@ class RefreshTokenModel {
       return null;
     }
   }
+
+  // Admin functions 
 }
 
 export { UserModel, RefreshTokenModel };

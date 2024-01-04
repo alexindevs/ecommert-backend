@@ -229,4 +229,33 @@ export class AuthService {
     }
   }
   
+  // admin functions: block user, unblock user, get all users
+
+  async blockUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const user = await this.userModel.blockUser(userId);
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async unblockUser(userId: number): Promise<PrismaUser | null> {
+    try {
+      const user = await this.userModel.unblockUser(userId);
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getAllUsers(): Promise<PrismaUser[]> {
+    try {
+      const users = await this.userModel.getAllUsers();
+      return users;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

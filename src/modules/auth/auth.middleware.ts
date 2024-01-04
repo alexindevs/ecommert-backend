@@ -72,5 +72,4 @@ export async function tokenVerification(req: Request, res: Response, next: Funct
       console.error('Error in tokenVerification:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
-  
   }
