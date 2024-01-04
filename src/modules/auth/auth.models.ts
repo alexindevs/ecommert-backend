@@ -28,10 +28,6 @@ class UserModel {
           password: user.password,
           firstName: user.firstName,
           lastName: user.lastName,
-          isAdmin: user.isAdmin,
-          isBlocked: user.isBlocked,
-          profileImage: user.profileImage || null,
-          otp: user.otp || null,
         },
       });
       return newUser;

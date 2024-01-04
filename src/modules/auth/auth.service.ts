@@ -43,6 +43,7 @@ export class AuthService {
         }
         const RefreshToken = await RefreshTokenModel.createToken(newUser.id);
         const AccessToken = await ATG.generate(newUser.id);
+        await this.sendVerificationEmail(newUser);
         return {user: newUser, token: AccessToken};
     }
     catch (error: any) {
@@ -59,6 +60,25 @@ export class AuthService {
       return bcrypt.compareSync(password, user.password);
     } catch (error) {
       throw error;
+    }
+  }
+
+  async verifyUser(token: string): Promise<PrismaUser | null> {
+    try {
+      const verifiedToken = ATG.checkTokenValidity(token);
+      if (!verifiedToken) {
+        return null;
+      }
+
+      // Check other (Routinr) codebases for how to do this
+      const resolvedUser = await verifiedToken.user;
+      const user = await this.userModel.getUserById(resolvedUser?.id);
+      if (!user) {
+        return null;
+      }
+      return user;
+    } catch (error) {
+      throw new Error("The verification process failed. Please try again.");
     }
   }
 
@@ -153,9 +173,6 @@ export class AuthService {
         throw new Error("User not found");
       }
 
-      // Generate a jwt to attach to the link to send to the user through their email
-      const token = ATG.generateForVerification(user.id);
-
       // Send the link to the user's email, have it redirect to the frontend, and have the frontend pass it back to the backend
     } catch (error) {
       throw error;
@@ -177,10 +194,9 @@ export class AuthService {
    * Sends a verification email to the specified user with the given token.
    *
    * @param {PrismaUser} user - The user to send the verification email to.
-   * @param {string} token - The token to include in the verification email.
    * @return {Promise<void>} A promise that resolves when the email is sent successfully.
    */
-  async sendVerificationEmail(user: PrismaUser, token: string): Promise<void> {
+  async sendVerificationEmail(user: PrismaUser): Promise<void> {
     try {
       const token = ATG.generateForVerification(user.id);
       const html = readFileSync("./src/templates/emails/verifyAccount.html", "utf8");

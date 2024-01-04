@@ -19,8 +19,8 @@ model User {
   lastName    String
   isAdmin     Boolean    @default(false)
   isBlocked   Boolean    @default(false)
+  isVerified  Boolean    @default(false)
   profileImage String?
-  otp          String?
   createdAt   DateTime   @default(now()) @db.Timestamp(6)
   updatedAt   DateTime   @updatedAt @default(now()) @db.Timestamp(6)
   

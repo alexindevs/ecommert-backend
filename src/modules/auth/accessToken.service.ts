@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-import UserModel from './auth.models';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import {UserModel} from './auth.models';
 
 const prisma = new PrismaClient();
 
@@ -56,10 +56,10 @@ class AccessTokenGenerator {
     }
   }
 
-   async checkTokenValidity(token: string): Promise<boolean> {
+   async checkTokenValidity(token: string): Promise< string | JwtPayload | boolean> {
     try {
       const decoded = jwt.verify(token, this.secret);
-      return true;
+      return decoded;
     } catch (error) {
       console.error('Error checking token expiry:', error);
       return false;

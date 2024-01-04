@@ -21,10 +21,10 @@ interface UserAndTokens {
     password: string;
     firstName: string;
     lastName: string;
-    isAdmin: boolean;
-    isBlocked: boolean;
+    isAdmin?: boolean;
+    isBlocked?: boolean;
+    isVerified?: boolean;
     profileImage?: string | null;
-    otp?: string | null;
     createdAt: Date;
     updatedAt: Date;
   }
