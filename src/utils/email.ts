@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 
-const emailPass = process.env.EMAIL_PASS || "";
+const emailPass = process.env.EMAIL_PASS || "checkENVlol";
+const platformEmail = process.env.PLATFORM_EMAIL || "alexindevs@gmail.com"
 
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
     try {
@@ -9,18 +10,16 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
         debug: true,
         logger: true,
         auth: {
-            user: "alexindevs@gmail.com",
+            user: platformEmail,
             pass: emailPass,
         },
         tls: {
             rejectUnauthorized: false
         }
       });
-
-      console.log("Everything's good till here.")
     
       const mailOptions = {
-            from: 'alexindevs@gmail.com',
+            from: platformEmail,
             to,
             subject,
             text: "",
@@ -28,9 +27,7 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
       };
       console.log(mailOptions.from, mailOptions.html, mailOptions.subject, mailOptions.to)
 
-      console.log("Before suspect:")
       const info = await transporter.sendMail(mailOptions);
-      console.log("After suspect.")
       console.log('Email sent:', info.response);
     } catch (error) {
       console.error('Error sending email:', error);

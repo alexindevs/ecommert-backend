@@ -3,8 +3,11 @@ import { User as PrismaUser } from '@prisma/client';
 import * as schema from './user.interface';
 import { UserModel, RefreshTokenModel } from "./auth.models";
 import AccessTokenGenerator from "./accessToken.service";
+import { sendEmail } from "../../utils/email";
+import { readFileSync } from "fs";
 
 const ATG = new AccessTokenGenerator();
+const platformName = process.env.PLATFORM_NAME || "Ecommert";
 
 export class AuthService {
   private userModel: UserModel; 
@@ -167,6 +170,29 @@ export class AuthService {
       return updatedUser;
     } catch (error) {
       throw new Error("The verification process failed. Please try again.");
+    }
+  }
+
+  /**
+   * Sends a verification email to the specified user with the given token.
+   *
+   * @param {PrismaUser} user - The user to send the verification email to.
+   * @param {string} token - The token to include in the verification email.
+   * @return {Promise<void>} A promise that resolves when the email is sent successfully.
+   */
+  async sendVerificationEmail(user: PrismaUser, token: string): Promise<void> {
+    try {
+      const token = ATG.generateForVerification(user.id);
+      const html = readFileSync("./src/templates/emails/verifyAccount.html", "utf8");
+      const url = `${process.env.FRONTEND_URL}/auth/verify-account/${token}`;
+      const username = user.username;
+      const email = user.email;
+      await sendEmail(
+        email,
+        "Verify your account",
+        html.replace("{{username}}", username).replace("{{platformName}}", platformName).replace("{{url}}", url));
+    } catch (error) {
+      throw error;
     }
   }
 }
