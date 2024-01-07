@@ -29,9 +29,10 @@
     "prisma": "^5.7.1",
     "sequelize": "^6.35.2",
     "typescript": "^5.3.3"
-  },
+  }, 
   "devDependencies": {
     "@types/lodash": "^4.14.202",
-    "@types/node": "^20.10.5"
+    "@types/node": "^20.10.5",
+    "nodemon": "^3.0.2"
   }
 }
