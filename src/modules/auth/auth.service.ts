@@ -10,7 +10,7 @@ import { readFileSync } from "fs";
 const ATG = new AccessTokenGenerator();
 const platformName = process.env.PLATFORM_NAME || "Ecommert";
 
-export class AuthService {
+export default class AuthService {
   private userModel: UserModel; 
   private RefreshTokenGenerator: RefreshTokenModel;
   constructor() {
