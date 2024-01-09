@@ -11,7 +11,7 @@ AuthRouter.get('/user/:userId', AuthMiddleware.tokenVerification, AuthController
 AuthRouter.put('/user/:userId', AuthMiddleware.tokenVerification, AuthController.updateUser);
 AuthRouter.delete('/user/:userId', AuthMiddleware.tokenVerification, AuthController.deleteUser);
 AuthRouter.put('/change-password/:userId', AuthMiddleware.tokenVerification, AuthController.changePassword);
-AuthRouter.post('/forgot-password', AuthController.forgotPassword);
+AuthRouter.post('/forgot-password', AuthController.forgotPassword); 
 AuthRouter.put('/reset-password/:userId', AuthController.resetPassword);
 
 // Admin functions
