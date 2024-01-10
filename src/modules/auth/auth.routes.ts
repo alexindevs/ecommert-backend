@@ -17,6 +17,6 @@ AuthRouter.put('/reset-password/:userId', AuthController.resetPassword);
 // Admin functions
 AuthRouter.put('/block-user/:userId', AuthMiddleware.tokenVerification, AuthController.blockUser);
 AuthRouter.put('/unblock-user/:userId', AuthMiddleware.tokenVerification, AuthController.unblockUser);
-AuthRouter.get('/all-users', AuthMiddleware.tokenVerification, AuthController.getAllUsers);
+AuthRouter.get('/', AuthMiddleware.tokenVerification, AuthController.getAllUsers);
 
 export default AuthRouter;
