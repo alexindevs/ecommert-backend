@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { User as PrismaUser } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import * as schema from './user.interface';
-import { UserModel, RefreshTokenModel } from "./auth.models";
+import { AuthRepository, RefreshTokenRepository } from "./auth.models";
 import AccessTokenGenerator from "./accessToken.service";
 import { sendEmail } from "../../utils/email";
 import { readFileSync } from "fs";
@@ -11,23 +11,23 @@ const ATG = new AccessTokenGenerator();
 const platformName = process.env.PLATFORM_NAME || "Ecommert";
 
 export default class AuthService {
-  private userModel: UserModel; 
-  private RefreshTokenGenerator: RefreshTokenModel;
+  private authRepo: AuthRepository; 
+  private RefreshTokenGenerator: RefreshTokenRepository;
   constructor() {
-    this.userModel = new UserModel();
-    this.RefreshTokenGenerator = new RefreshTokenModel();
+    this.authRepo = new AuthRepository();
+    this.RefreshTokenGenerator = new RefreshTokenRepository();
   }
 
   // User registration
   async registerUser(user: schema.UserWithoutId): Promise<Object | null> {
    try {
         // Check if the username or email already exists
-        const existingUser = await this.userModel.getUserByUsername(user.username);
+        const existingUser = await this.authRepo.getUserByUsername(user.username);
         if (existingUser) {
         throw new Error("Username already exists.");
         }
 
-        const existingEmail = await this.userModel.getUserByUsername(user.email);
+        const existingEmail = await this.authRepo.getUserByUsername(user.email);
         if (existingEmail) {
         throw new Error("Email already exists.");
         }
@@ -37,12 +37,12 @@ export default class AuthService {
         user.password = hashedPassword;
 
         // Create the user
-        const newUser = await this.userModel.addUser(user);
+        const newUser = await this.authRepo.addUser(user);
 
         if (!newUser) {
         throw new Error("Failed to create user.");
         }
-        const RefreshToken = await RefreshTokenModel.createToken(newUser.id);
+        const RefreshToken = await RefreshTokenRepository.createToken(newUser.id);
         const AccessToken = await ATG.generate(newUser.id);
         await this.sendVerificationEmail(newUser);
         return {user: newUser, token: AccessToken};
@@ -54,7 +54,7 @@ export default class AuthService {
 
   async checkPassword(userId: number, password: string): Promise<boolean> {
     try {
-      const user = await this.userModel.getUserById(userId);
+      const user = await this.authRepo.getUserById(userId);
       if (!user) {
         return false;
       }
@@ -73,11 +73,11 @@ export default class AuthService {
 
       const jwtSecret = process.env.JWT_SECRET ||  "";
       const resolvedUser = jwt.verify(token, jwtSecret) as unknown as { user: PrismaUser, exp: number };
-      const user = await this.userModel.getUserById(resolvedUser?.user.id);
+      const user = await this.authRepo.getUserById(resolvedUser?.user.id);
       if (!user) {
         return null;
       }
-      const verifiedUser = await this.userModel.verifyUser(user.id);
+      const verifiedUser = await this.authRepo.verifyUser(user.id);
       return verifiedUser;
     } catch (error) {
       throw new Error("The verification process failed. Please try again.");
@@ -85,7 +85,7 @@ export default class AuthService {
   }
 
   async loginUser(identifier: string, password: string): Promise<Object | null> {
-    const user = await this.userModel.getUserByUsername(identifier) || await this.userModel.getUserByEmail(identifier);
+    const user = await this.authRepo.getUserByUsername(identifier) || await this.authRepo.getUserByEmail(identifier);
 
     if (!user) {
         throw new Error("Invalid credentials");
@@ -94,11 +94,11 @@ export default class AuthService {
     if (!await this.checkPassword(user.id, password)) {
       throw new Error("Invalid credentials");
     } else {
-      let RefreshToken = await RefreshTokenModel.getTokenByUserId(user.id);
+      let RefreshToken = await RefreshTokenRepository.getTokenByUserId(user.id);
         if (!RefreshToken) {
-          RefreshToken = await RefreshTokenModel.createToken(user.id);
+          RefreshToken = await RefreshTokenRepository.createToken(user.id);
         } else {
-          RefreshToken = await RefreshTokenModel.updateToken(RefreshToken.id);
+          RefreshToken = await RefreshTokenRepository.updateToken(RefreshToken.id);
         }
       const AccessToken = await ATG.generate(user.id);
       return {user: user, token: AccessToken};
@@ -107,10 +107,10 @@ export default class AuthService {
 
   async logout(userId: number): Promise<PrismaUser | null> {
     try {
-      const refreshToken = await RefreshTokenModel.getTokenByUserId(userId);
-      const user = await this.userModel.getUserById(userId);
+      const refreshToken = await RefreshTokenRepository.getTokenByUserId(userId);
+      const user = await this.authRepo.getUserById(userId);
       if (refreshToken) {
-        const deleteRefreshToken = await RefreshTokenModel?.destroyToken(refreshToken.id);
+        const deleteRefreshToken = await RefreshTokenRepository?.destroyToken(refreshToken.id);
       } else {
         return null;
       }
@@ -123,7 +123,7 @@ export default class AuthService {
 
   async getUserById(userId: number): Promise<PrismaUser | null> {
     try {
-      const user = await this.userModel.getUserById(userId);
+      const user = await this.authRepo.getUserById(userId);
       return user;
     }
     catch (error) {
@@ -133,7 +133,7 @@ export default class AuthService {
 
   async updateUser(userId: number, user: Partial<PrismaUser>): Promise<PrismaUser | null> {
     try {
-      const updatedUser = await this.userModel.updateUser(userId, user);
+      const updatedUser = await this.authRepo.updateUser(userId, user);
       return updatedUser;
     }
     catch (error) {
@@ -143,7 +143,7 @@ export default class AuthService {
 
   async deleteUser(userId: number): Promise<PrismaUser | null> {
     try {
-      const deletedUser = await this.userModel.deleteUser(userId);
+      const deletedUser = await this.authRepo.deleteUser(userId);
       return deletedUser;
     }
     catch (error) {
@@ -153,7 +153,7 @@ export default class AuthService {
 
   async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<PrismaUser | null> {
     try {
-      const user = await this.userModel.getUserById(userId);
+      const user = await this.authRepo.getUserById(userId);
       if (!user) {
         return null;
       }
@@ -161,7 +161,7 @@ export default class AuthService {
         throw new Error("Invalid password");
       }
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      const updatedUser = await this.userModel.updateUser(userId, { password: hashedPassword });
+      const updatedUser = await this.authRepo.updateUser(userId, { password: hashedPassword });
       return updatedUser;
     } catch (error) {
       throw error;
@@ -170,7 +170,7 @@ export default class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     try {
-      const user = await this.userModel.getUserByEmail(email);
+      const user = await this.authRepo.getUserByEmail(email);
       if (!user) {
         throw new Error("User not found");
       }
@@ -184,7 +184,7 @@ export default class AuthService {
     try {
       const verifiedToken = ATG.checkTokenValidity(token);
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      const updatedUser = await this.userModel.updateUser(userId, { password: hashedPassword });
+      const updatedUser = await this.authRepo.updateUser(userId, { password: hashedPassword });
       return updatedUser;
     } catch (error) {
       throw new Error("The verification process failed. Please try again.");
@@ -233,7 +233,7 @@ export default class AuthService {
 
   async blockUser(userId: number): Promise<PrismaUser | null> {
     try {
-      const user = await this.userModel.blockUser(userId);
+      const user = await this.authRepo.blockUser(userId);
 
       return user;
     } catch (error) {
@@ -243,7 +243,7 @@ export default class AuthService {
 
   async unblockUser(userId: number): Promise<PrismaUser | null> {
     try {
-      const user = await this.userModel.unblockUser(userId);
+      const user = await this.authRepo.unblockUser(userId);
       return user;
     } catch (error) {
       throw error;
@@ -252,7 +252,7 @@ export default class AuthService {
 
   async getAllUsers(): Promise<PrismaUser[]> {
     try {
-      const users = await this.userModel.getAllUsers();
+      const users = await this.authRepo.getAllUsers();
       return users;
     } catch (error) {
       throw error;

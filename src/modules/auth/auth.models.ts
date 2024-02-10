@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 const prisma = new PrismaClient();
 const jwtSecret = process.env.JWT_SECRET || 'secret';
 
-class UserModel {
+class AuthRepository {
   private prisma: PrismaClient;
 
   constructor() {
@@ -136,7 +136,7 @@ class UserModel {
   }
 }
 
-class RefreshTokenModel {
+class RefreshTokenRepository {
   /**
    * Creates a new refresh token for the user.
    *
@@ -246,4 +246,4 @@ class RefreshTokenModel {
   // Admin functions 
 }
 
-export { UserModel, RefreshTokenModel };
+export { AuthRepository, RefreshTokenRepository };

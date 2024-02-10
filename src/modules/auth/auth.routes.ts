@@ -15,7 +15,7 @@ AuthRouter.post('/forgot-password', AuthController.forgotPassword);
 AuthRouter.put('/reset-password/:userId', AuthController.resetPassword);
 
 // Admin functions
-AuthRouter.put('/block-user/:userId', AuthMiddleware.tokenVerification, AuthController.blockUser);
+AuthRouter.put('/block-user/:userId', AuthMiddleware.tokenVerification, AuthMiddleware.checkIfAdmin, AuthController.blockUser);
 AuthRouter.put('/unblock-user/:userId', AuthMiddleware.tokenVerification, AuthController.unblockUser);
 AuthRouter.get('/', AuthMiddleware.tokenVerification, AuthController.getAllUsers);
 

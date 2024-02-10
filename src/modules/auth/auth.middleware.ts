@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { RefreshTokenModel } from './auth.models';
-import { AuthService } from './auth.service';
+import AuthService from './auth.service';
 import AccessTokenGenerator from './accessToken.service';
 
 const ATG = new AccessTokenGenerator();
