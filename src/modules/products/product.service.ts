@@ -101,6 +101,16 @@ export default class ProductService {
         }
     }
 
+    async fetchFeaturedProducts(): Promise<Product[]> {
+        try {
+            const featuredProducts = await this.productRepo.getFeaturedProducts();
+            return featuredProducts;
+        } catch (error) {
+            logger.error(error);
+            throw error;
+        }
+    }
+
     async deleteReview(userId: number, productId: number): Promise<Review | null> {
         try {
             const deletedReview = await this.productRepo.deleteReview(userId, productId);
