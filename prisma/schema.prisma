@@ -31,6 +31,7 @@ model User {
   
   refreshTokens RefreshToken[]
   profile       Profile?
+  products      Product[]
 }
 
 model RefreshToken {
@@ -40,8 +41,29 @@ model RefreshToken {
   createdAt  DateTime  @default(now()) @db.Timestamp(6)
   updatedAt  DateTime  @updatedAt @default(now()) @db.Timestamp(6)
 
-  // Relationships
   user       User      @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  likes       Int
+  image       String
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @default(now()) @db.Timestamp(6)
+  userId      Int
+
+  cart        Cart[]
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Cart {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  products    Product[]
+  total       Float
 }
 
 model Profile {

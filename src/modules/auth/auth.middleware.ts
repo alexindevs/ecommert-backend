@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { RefreshTokenModel } from './auth.repository';
+import { RefreshTokenRepository } from './auth.repository';
 import AuthService from './auth.service';
 import AccessTokenGenerator from './accessToken.service';
 
@@ -48,10 +48,10 @@ export async function tokenVerification(req: Request, res: Response, next: Funct
       }
   
         if (expDate < Math.floor(Date.now() / 1000)) {
-          const refreshToken = await RefreshTokenModel.getTokenByUserId(userId);
+          const refreshToken = await RefreshTokenRepository.getTokenByUserId(userId);
   
           if (refreshToken) {
-            const tokenIsValid = await RefreshTokenModel.checkTokenValidity(refreshToken.token);
+            const tokenIsValid = await RefreshTokenRepository.checkTokenValidity(refreshToken.token);
   
             if (tokenIsValid) {
               const accessToken = await ATG.generate(userId);

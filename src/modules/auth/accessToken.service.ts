@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import {UserModel} from './auth.repository';
+import { AuthRepository } from './auth.repository';
 
 const prisma = new PrismaClient();
 
@@ -8,10 +8,10 @@ class AccessTokenGenerator {
   private readonly secret: string = process.env.JWT_SECRET || 'coommma';
   private readonly expiresIn: string = '1h';
   private readonly expiresInVerif: string = '15m';
-  private userModel: UserModel;
+  private userModel: AuthRepository;
 
   constructor() {
-    this.userModel = new UserModel();
+    this.userModel = new AuthRepository();
   }
 
   public async generate(userId: number): Promise<string | null> {
