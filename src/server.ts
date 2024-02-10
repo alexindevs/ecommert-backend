@@ -23,8 +23,10 @@ app.use(cors());
 app.use(express.json());
 
 import authRouter from './modules/auth/auth.routes';
+import ProductRoutes from './modules/products/product.routes';
 
 app.use('/auth', authRouter);
+app.use('/products', ProductRoutes)
 
 app.get('/', (req, res) => {
   res.redirect('/api-docs');
