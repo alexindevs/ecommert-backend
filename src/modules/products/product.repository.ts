@@ -11,6 +11,12 @@ export default class ProductRepository {
         });
     }
 
+    async getFeaturedProducts(): Promise<Product[]> {
+        return prisma.product.findMany({
+            where: { isFeatured: true },
+        });
+    }
+
     async addProduct(product: ProductInput): Promise<Product> {
         return prisma.product.create({
             data: product,
