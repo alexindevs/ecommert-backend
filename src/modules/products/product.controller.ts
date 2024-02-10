@@ -57,7 +57,7 @@ const deleteItemFromLocalStorage = (publicID: string) => {
     }
 };
 
-export const deleteUploadedImages = async (imageUrls: string[]) => {
+const deleteUploadedImages = async (imageUrls: string[]) => {
     for (const imageUrl of imageUrls) {
       try {
         // Extract the filename from the Cloudinary URL
@@ -86,15 +86,7 @@ export const deleteUploadedImages = async (imageUrls: string[]) => {
     }
 };
 
-class ProductController {
-    async fetchAllProducts(req: Request, res: Response) {
-        try {
-            const products = await productService.getAllProducts();
-            return res.status(200).json(products);
-        } catch (error) {
-            return res.status(500).json(error);
-        }
-    }
+export default class ProductController {
 
     async addProduct(req: Request, res: Response) {
         try {
@@ -164,6 +156,31 @@ class ProductController {
             } else {
                 return res.status(404).json({ success: false, message: 'Item not found' });
             }
+        } catch (error: any) {
+            logger.error(error.message);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    async getProductById(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const product = await productService.getProductById(parseInt(id));
+            if (product) {
+                return res.status(200).json(product);
+            } else {
+                return res.status(404).json({ success: false, message: 'Item not found' });
+            }
+        } catch (error: any) {
+            logger.error(error.message);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    async getFeaturedProducts(req: Request, res: Response) {
+        try {
+            const products = await productService.fetchFeaturedProducts();
+            return res.status(200).json(products);
         } catch (error: any) {
             logger.error(error.message);
             return res.status(500).json({ success: false, error: error.message });
@@ -263,6 +280,21 @@ class ProductController {
         try {
             const products = await productService.getAllProducts();
             return res.status(200).json({ success: true, products });
+        } catch (error: any) {
+            logger.error(error.message);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    async updateReview(req: Request, res: Response) {
+        try {
+            const { userId, productId } = req.params;
+            const review = await productService.updateReview(parseInt(userId), parseInt(productId), req.body);
+            if (review) {
+                return res.status(200).json({ success: true, message: 'Review updated successfully' });
+            } else {
+                return res.status(404).json({ success: false, message: 'Review not found' });
+            }
         } catch (error: any) {
             logger.error(error.message);
             return res.status(500).json({ success: false, error: error.message });
