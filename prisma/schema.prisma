@@ -50,6 +50,7 @@ model Product {
   description String
   price       Float
   stock       Int       @default(0)
+  isFeatured  Boolean   @default(false)
   likes       Int       @default(0)
   image       String
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
