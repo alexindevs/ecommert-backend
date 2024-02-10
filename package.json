@@ -2,9 +2,12 @@
   "name": "ecommert-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "npx jest"
+    "test": "npx jest",
+    "start": "node dist/server.js",
+    "dev": "ts-node ./src/server.ts",
+    "build": "tsc"
   },
   "author": "alexindevs",
   "license": "GPL-3.0-or-later",
@@ -34,6 +37,7 @@
     "nodemailer": "^6.9.8",
     "prisma": "^5.7.1",
     "sequelize": "^6.35.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "uuid": "^9.0.1",
     "winston": "^3.11.0"
