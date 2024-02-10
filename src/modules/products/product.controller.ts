@@ -162,6 +162,36 @@ export default class ProductController {
         }
     }
 
+    async makeFeatured(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const product = await productService.setFeatured(parseInt(id));
+            if (product) {
+                return res.status(200).json({ success: true, message: 'Item featured successfully' });
+            } else {
+                return res.status(404).json({ success: false, message: 'Item not found' });
+            }
+        } catch (error: any) {
+            logger.error(error.message);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
+    async unmakeFeatured(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const product = await productService.unsetFeatured(parseInt(id));
+            if (product) {
+                return res.status(200).json({ success: true, message: 'Item unfeatured successfully' });
+            } else {
+                return res.status(404).json({ success: false, message: 'Item not found' });
+            }
+        } catch (error: any) {
+            logger.error(error.message);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+
     async getProductById(req: Request, res: Response) {
         try {
             const { id } = req.params;
