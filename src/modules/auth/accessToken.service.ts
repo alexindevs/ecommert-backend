@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import {UserModel} from './auth.models';
+import {UserModel} from './auth.repository';
 
 const prisma = new PrismaClient();
 

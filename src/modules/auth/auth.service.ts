@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { User as PrismaUser } from '@prisma/client';
 import jwt from "jsonwebtoken";
 import * as schema from './user.interface';
-import { AuthRepository, RefreshTokenRepository } from "./auth.models";
+import { AuthRepository, RefreshTokenRepository } from "./auth.repository";
 import AccessTokenGenerator from "./accessToken.service";
 import { sendEmail } from "../../utils/email";
 import { readFileSync } from "fs";
