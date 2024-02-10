@@ -27,8 +27,8 @@ model User {
   // Relationships
   // addresses   Address[]
   // orders      Order[]
-  // reviews     Review[]
-  
+
+  reviews     Review[] 
   refreshTokens RefreshToken[]
   profile       Profile?
   products      Product[]
@@ -49,14 +49,30 @@ model Product {
   name        String
   description String
   price       Float
-  likes       Int
+  stock       Int       @default(0)
+  likes       Int       @default(0)
   image       String
   createdAt   DateTime  @default(now()) @db.Timestamp(6)
   updatedAt   DateTime  @updatedAt @default(now()) @db.Timestamp(6)
   userId      Int
 
   cart        Cart[]
+  reviews     Review[]
   user        User      @relation(fields: [userId], references: [id])
+}
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  rating      Int
+  comment     String
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+
+  // Relationships
+  @@unique([userId, productId])
+  user        User      @relation(fields: [userId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
 }
 
 model Cart {
