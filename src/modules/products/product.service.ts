@@ -101,10 +101,30 @@ export default class ProductService {
         }
     }
 
+    async setFeatured(id: number): Promise<Product | null> {
+        try {
+            const featuredProduct = await this.productRepo.setFeatured(id);
+            return featuredProduct;
+        } catch (error) {
+            logger.error(error);
+            throw error;
+        }
+    }
+
     async fetchFeaturedProducts(): Promise<Product[]> {
         try {
             const featuredProducts = await this.productRepo.getFeaturedProducts();
             return featuredProducts;
+        } catch (error) {
+            logger.error(error);
+            throw error;
+        }
+    }
+
+    async unsetFeatured(id: number): Promise<Product | null> {
+        try {
+            const unfeaturedProduct = await this.productRepo.unsetFeatured(id);
+            return unfeaturedProduct;
         } catch (error) {
             logger.error(error);
             throw error;
