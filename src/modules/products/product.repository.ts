@@ -29,6 +29,20 @@ export default class ProductRepository {
         });
     }
 
+    async setFeatured(id: number): Promise<Product | null> {
+        return prisma.product.update({
+            where: { id },
+            data: { isFeatured: true },
+        });
+    }
+
+    async unsetFeatured(id: number): Promise<Product | null> {
+        return prisma.product.update({
+            where: { id },
+            data: { isFeatured: false },
+        });
+    }
+
     async updateProduct(id: number, product: Product): Promise<Product | null> {
         return prisma.product.update({
             where: { id },
