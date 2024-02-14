@@ -37,15 +37,37 @@ export default class CartRepository {
         });
     }
 
-    async addProductToCart(userId: number, productId: number, quantity: number): Promise<Cart | null> {
+async addProductToCart(userId: number, productId: number, quantity: number): Promise<Cart | null> {
+    const cart = await prisma.cart.update({
+        where: {
+            userId: userId
+        },
+        data: {
+            cartItems: {
+                create: {
+                    quantity: quantity,
+                    productId: productId
+                }
+            },
+            total: {
+                increment: quantity
+            }
+        },
+        include: {
+            cartItems: true
+        }
+    });
+    return cart;
+}
+
+    async removeProductFromCart(userId: number, productId: number): Promise<Cart | null> {
         return prisma.cart.update({
             where: {
                 userId: userId
             },
             data: {
                 cartItems: {
-                    create: {
-                        quantity: quantity,
+                    deleteMany: {
                         productId: productId
                     }
                 }
@@ -56,21 +78,11 @@ export default class CartRepository {
         });
     }
 
-async removeProductFromCart(userId: number, productId: number): Promise<Cart | null> {
-  return prisma.cart.update({
-    where: {
-      userId: userId
-    },
-    data: {
-      cartItems: {
-        deleteMany: {
-          productId: productId
-        }
-      }
-    },
-    include: {
-      cartItems: true
+    async deleteCart(userId: number): Promise<Cart | null> {
+        return prisma.cart.delete({
+            where: {
+                userId: userId
+            }
+        });
     }
-  });
-}
 }
