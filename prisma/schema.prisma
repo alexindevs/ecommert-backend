@@ -32,6 +32,8 @@ model User {
   refreshTokens RefreshToken[]
   profile       Profile?
   products      Product[]
+
+  cart        Cart?
 }
 
 model RefreshToken {
@@ -57,7 +59,7 @@ model Product {
   updatedAt   DateTime  @updatedAt @default(now()) @db.Timestamp(6)
   userId      Int
 
-  cart        Cart[]
+  carts       CartItem[]
   reviews     Review[]
   user        User      @relation(fields: [userId], references: [id])
 }
@@ -78,9 +80,19 @@ model Review {
 
 model Cart {
   id          Int       @id @default(autoincrement())
-  userId      Int
-  products    Product[]
-  total       Float
+  userId      Int       @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems   CartItem[] 
+  total       Float     @default(0)
+}
+
+model CartItem {
+  id          Int       @id @default(autoincrement())
+  cart        Cart      @relation(fields: [cartId], references: [id])
+  cartId      Int
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   Int
+  quantity    Int
 }
 
 model Profile {
