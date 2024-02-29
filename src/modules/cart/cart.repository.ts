@@ -11,6 +11,29 @@ export default class CartRepository {
         });
     }
 
+    async updateProductQuantity(userId: number, productId: number, quantity: number): Promise<Cart | null> {
+        return prisma.cart.update({
+            where: {
+                userId: userId
+            },
+            data: {
+                cartItems: {
+                    updateMany: {
+                        where: {
+                            productId: productId
+                        },
+                        data: {
+                            quantity: quantity
+                        }
+                    }
+                }
+            },
+            include: {
+                cartItems: true
+            }
+        });
+    }
+    
     async getCartByUserId(userId: number): Promise<Cart | null> {
         return prisma.cart.findUnique({
             where: {
@@ -78,11 +101,20 @@ async addProductToCart(userId: number, productId: number, quantity: number): Pro
         });
     }
 
-    async deleteCart(userId: number): Promise<Cart | null> {
-        return prisma.cart.delete({
+    async clearCart(userId: number): Promise<Cart | null> {
+        return prisma.cart.update({
             where: {
                 userId: userId
+            },
+            data: {
+                cartItems: {
+                    deleteMany: {}
+                },
+                total: 0 // Reset total to zero
+            },
+            include: {
+                cartItems: true
             }
         });
-    }
+    }    
 }
