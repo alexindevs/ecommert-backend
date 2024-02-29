@@ -38,10 +38,12 @@ setConfig({
 })
 
 import authRouter from './modules/auth/auth.routes';
-import ProductRoutes from './modules/products/product.routes';
+import ProductRouter from './modules/products/product.routes';
+import CartRouter from './modules/cart/cart.routes';
 
 app.use('/auth', authRouter);
-app.use('/products', ProductRoutes)
+app.use('/products', ProductRouter)
+app.use('/carts', CartRouter)
 
 app.get('/', (req, res) => {
   res.redirect('/api-docs');
