@@ -83,7 +83,7 @@ model Cart {
   userId      Int       @unique
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   cartItems   CartItem[] 
-  total       Float     @default(0)
+  totalPrice       Float     @default(0)
 }
 
 model CartItem {

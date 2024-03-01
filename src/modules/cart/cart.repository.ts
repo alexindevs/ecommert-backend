@@ -12,11 +12,33 @@ export default class CartRepository {
     }
 
     async updateProductQuantity(userId: number, productId: number, quantity: number): Promise<Cart | null> {
+        const cartItems = await prisma.cartItem.findMany({
+            where: {
+                cart: {
+                    userId: userId
+                }
+            },
+            select: {
+                quantity: true,
+                product: {
+                    select: {
+                        price: true
+                    }
+                }
+            }
+        });
+    
+        const totalPrice = cartItems.reduce((acc, cartItem) => {
+            const itemPrice = cartItem.product.price;
+            const itemQuantity = cartItem.quantity;
+            return acc + itemPrice * itemQuantity;
+        }, 0);
         return prisma.cart.update({
             where: {
                 userId: userId
             },
             data: {
+                totalPrice: totalPrice,
                 cartItems: {
                     updateMany: {
                         where: {
@@ -60,30 +82,88 @@ export default class CartRepository {
         });
     }
 
-async addProductToCart(userId: number, productId: number, quantity: number): Promise<Cart | null> {
-    const cart = await prisma.cart.update({
-        where: {
-            userId: userId
-        },
-        data: {
-            cartItems: {
-                create: {
-                    quantity: quantity,
+    async addProductToCart(userId: number, productId: number, quantity: number): Promise<Cart | null> {
+        const cartItems = await prisma.cartItem.findMany({
+            where: {
+                cart: {
+                    userId: userId
+                }
+            },
+            select: {
+                quantity: true,
+                product: {
+                    select: {
+                        price: true
+                    }
+                }
+            }
+        });
+    
+        const totalPrice = cartItems.reduce((acc, cartItem) => {
+            const itemPrice = cartItem.product.price;
+            const itemQuantity = cartItem.quantity;
+            return acc + itemPrice * itemQuantity;
+        }, 0);
+    
+        const productPrice = await prisma.product.findUnique({
+            where: {
+                id: productId
+            },
+            select: {
+                price: true
+            }
+        });
+
+        if (!productPrice) {
+            return null;
+        }
+        const newTotalPrice = totalPrice + productPrice.price * quantity;
+    
+        return prisma.cart.update({
+            where: {
+                userId: userId
+            },
+            data: {
+                cartItems: {
+                    create: {
+                        quantity: quantity,
+                        productId: productId
+                    }
+                },
+                totalPrice: newTotalPrice
+            },
+            include: {
+                cartItems: true
+            }
+        });
+    }
+    
+    async removeProductFromCart(userId: number, productId: number): Promise<Cart | null> {
+        const cartItems = await prisma.cartItem.findMany({
+            where: {
+                cart: {
+                    userId: userId
+                },
+                NOT: {
                     productId: productId
                 }
             },
-            total: {
-                increment: quantity
+            select: {
+                quantity: true,
+                product: {
+                    select: {
+                        price: true
+                    }
+                }
             }
-        },
-        include: {
-            cartItems: true
-        }
-    });
-    return cart;
-}
-
-    async removeProductFromCart(userId: number, productId: number): Promise<Cart | null> {
+        });
+    
+        const totalPrice = cartItems.reduce((acc, cartItem) => {
+            const itemPrice = cartItem.product.price;
+            const itemQuantity = cartItem.quantity;
+            return acc + itemPrice * itemQuantity;
+        }, 0);
+    
         return prisma.cart.update({
             where: {
                 userId: userId
@@ -93,14 +173,15 @@ async addProductToCart(userId: number, productId: number, quantity: number): Pro
                     deleteMany: {
                         productId: productId
                     }
-                }
+                },
+                totalPrice: totalPrice
             },
             include: {
                 cartItems: true
             }
         });
     }
-
+    
     async clearCart(userId: number): Promise<Cart | null> {
         return prisma.cart.update({
             where: {
@@ -110,11 +191,12 @@ async addProductToCart(userId: number, productId: number, quantity: number): Pro
                 cartItems: {
                     deleteMany: {}
                 },
-                total: 0 // Reset total to zero
+                totalPrice: 0
             },
             include: {
                 cartItems: true
             }
         });
-    }    
+    }
+    
 }
