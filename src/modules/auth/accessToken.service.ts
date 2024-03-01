@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { AuthRepository } from './auth.repository';
+import { UserWithoutPassword } from './user.interface';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,7 @@ class AccessTokenGenerator {
     this.userModel = new AuthRepository();
   }
 
-  public async generate(userId: number): Promise<string | null> {
+  public async generate(userId: number): Promise<{ accessToken: string; user: UserWithoutPassword} | null> {
     try {
       const user = await this.userModel.getUserById(userId);
 
@@ -25,7 +26,7 @@ class AccessTokenGenerator {
           expiresIn: this.expiresIn,
         });
 
-        return accessToken;
+        return {accessToken, user: userWithoutPassword};
       }
 
       return null;
@@ -38,6 +39,7 @@ class AccessTokenGenerator {
   async generateForVerification(userId: number): Promise<string | null> {
     try {
       const user = await this.userModel.getUserById(userId);
+      console.log('user:', user);
 
       if (user) {
         const { password, ...userWithoutPassword } = user;
@@ -45,6 +47,7 @@ class AccessTokenGenerator {
         const accessToken = jwt.sign({ user: userWithoutPassword }, this.secret, {
           expiresIn: this.expiresInVerif,
         });
+        console.log('accessToken:', accessToken);
 
         return accessToken;
       }
