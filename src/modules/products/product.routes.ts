@@ -13,8 +13,8 @@ ProductRoutes.post("/", tokenVerification, checkIfAdmin, upload.array('images', 
 ProductRoutes.delete("/:id",tokenVerification, checkIfAdmin,  productController.deleteProduct);
 ProductRoutes.get("/:id", productController.getProductById);
 ProductRoutes.get("/featured", productController.getFeaturedProducts);
-ProductRoutes.post("/:id/feature", tokenVerification, checkIfAdmin, productController.makeFeatured);
-ProductRoutes.post("/:id/unfeature", tokenVerification, checkIfAdmin, productController.unmakeFeatured);
+ProductRoutes.put("/:id/feature", tokenVerification, checkIfAdmin, productController.makeFeatured);
+ProductRoutes.put("/:id/unfeature", tokenVerification, checkIfAdmin, productController.unmakeFeatured);
 ProductRoutes.patch("/:id", productController.updateProduct);
 ProductRoutes.post("/:id/like", tokenVerification, productController.likeProduct);
 ProductRoutes.post("/:id/unlike",tokenVerification, productController.unlikeProduct);
@@ -22,6 +22,6 @@ ProductRoutes.get("/:id/reviews", productController.fetchProductWithReviews);
 ProductRoutes.post("/:id/reviews",tokenVerification, productController.addReview);
 ProductRoutes.delete("/:id/reviews/:reviewId", tokenVerification, productController.deleteReview);
 ProductRoutes.get("/", productController.getAllProducts);
-ProductRoutes.patch("/:id/reviews/:reviewId", tokenVerification, productController.updateReview);
+ProductRoutes.patch("/:productId/reviews/:userId", tokenVerification, productController.updateReview);
 
 export default ProductRoutes;
