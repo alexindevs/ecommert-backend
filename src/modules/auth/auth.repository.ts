@@ -62,6 +62,17 @@ class AuthRepository {
     });
   }
 
+  async fetchBlockedUsers(): Promise<PrismaUser[]> {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { isBlocked: true },
+      });
+      return users;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getUserByEmail(email: string): Promise<PrismaUser | null> {
       try {
         const user = await this.prisma.user.findUnique({
