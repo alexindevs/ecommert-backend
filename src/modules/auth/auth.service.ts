@@ -44,8 +44,11 @@ export default class AuthService {
         }
         const RefreshToken = await RefreshTokenRepository.createToken(newUser.id);
         const AccessToken = await ATG.generate(newUser.id);
+        if (!AccessToken || !RefreshToken) {
+          throw new Error("Failed to create access token or refresh token.");
+        }
         await this.sendVerificationEmail(newUser);
-        return {user: newUser, token: AccessToken};
+        return {user: newUser, token: AccessToken.accessToken};
     }
     catch (error: any) {
       throw error;
@@ -101,7 +104,7 @@ export default class AuthService {
           RefreshToken = await RefreshTokenRepository.updateToken(RefreshToken.id);
         }
       const AccessToken = await ATG.generate(user.id);
-      return {user: user, token: AccessToken};
+      return {user: user, token: AccessToken?.accessToken};
     }
   }
 
@@ -110,11 +113,21 @@ export default class AuthService {
       const refreshToken = await RefreshTokenRepository.getTokenByUserId(userId);
       const user = await this.authRepo.getUserById(userId);
       if (refreshToken) {
-        const deleteRefreshToken = await RefreshTokenRepository?.destroyToken(refreshToken.id);
+        await RefreshTokenRepository?.destroyToken(refreshToken.id);
       } else {
         return null;
       }
       return user;
+    }
+    catch (error) {
+      throw error;
+    }
+  }
+
+  async fetchBlockedUsers(): Promise<PrismaUser[] | null> {
+    try {
+      const users = await this.authRepo.fetchBlockedUsers();
+      return users;
     }
     catch (error) {
       throw error;
@@ -187,7 +200,7 @@ export default class AuthService {
       const updatedUser = await this.authRepo.updateUser(userId, { password: hashedPassword });
       return updatedUser;
     } catch (error) {
-      throw new Error("The verification process failed. Please try again.");
+      throw error;
     }
   }
 
@@ -213,9 +226,26 @@ export default class AuthService {
     }
   }
 
+  async verifyAccount(email: number, token: string): Promise<PrismaUser | null> {
+    try {
+      const verifiedToken = await ATG.checkTokenValidity(token);
+      const user = await this.authRepo.getUserById(verifiedToken.userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      if (user.isVerified) {
+        throw new Error("User already verified");
+      }
+      const updatedUser = await this.authRepo.updateUser(user.id, { isVerified: true });
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async sendForgotPasswordEmail(user: PrismaUser): Promise<void> {
     try {
-      const token = ATG.generateForVerification(user.id);
+      const token = await ATG.generateForVerification(user.id);
       const html = readFileSync("./src/templates/emails/forgotPassword.html", "utf8");
       const url = `${process.env.FRONTEND_URL}/auth/forgot-password/${token}`;
       const username = user.username;
