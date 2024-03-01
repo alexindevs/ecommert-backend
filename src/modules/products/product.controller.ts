@@ -128,14 +128,14 @@ export default class ProductController {
             const product = await productService.addProduct({
                 name,
                 description,
-                price,
-                stock,
-                userId,
+                price: parseFloat(price),
+                stock: parseInt(stock),
+                userId: parseInt(userId),
                 image: imageUrls
             });
 
             if (product) {
-                return res.status(201).json({ success: true, message: 'Item created successfully' });
+                return res.status(201).json(product);
               } else {
                 // Rollback: Delete the uploaded images
                 await deleteUploadedImages(uploadedImages);
