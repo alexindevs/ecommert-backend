@@ -3,23 +3,17 @@ import jwt from 'jsonwebtoken';
 import { RefreshTokenRepository } from '../modules/auth/auth.repository';
 import AuthService from '../modules/auth/auth.service';
 import AccessTokenGenerator from '../modules/auth/accessToken.service';
+import { UserWithoutPassword } from '../modules/auth/user.interface';
 
 const ATG = new AccessTokenGenerator();
 const authService = new AuthService();
-export async function checkIfAdmin(req: Request, res: Response, next: NextFunction) {
-    const token = req.headers.authorization?.split(' ')[1];
 
-    if (!token) {
-      return res.status(401).json({ error: 'TOKEN_NOT_FOUND_IN_HEADER' });
-    }
-
+export interface CustomRequest extends Request {
+  user?: UserWithoutPassword;
+}
+export async function checkIfAdmin(req: CustomRequest, res: Response, next: NextFunction) {
     try {
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET || "") as unknown as { exp: number; user: { id: number } };
-      const expDate = decodedToken?.exp;
-      const userId = decodedToken?.user.id;
-
-      const user = await authService.getUserById(userId);
-      const isAdmin = user?.isAdmin === true;
+      const isAdmin = req.user?.isAdmin === true;
 
       if (isAdmin) {
         return next();
@@ -29,10 +23,28 @@ export async function checkIfAdmin(req: Request, res: Response, next: NextFuncti
     } catch (error) {
       return res.status(401).json({ error: 'INVALID_TOKEN' });
     }
+}
+
+export async function checkIfUserBlocked(req: CustomRequest, res: Response, next: NextFunction) {
+    try {  
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'USER_NOT_FOUND' });
+      }
+      const notBlocked = req.user?.isBlocked ? false : true;
+
+      if (!notBlocked) {
+        return next();
+      } else {
+        return res.status(401).json({ error: 'USER_BLOCKED' });
+      }
+    } catch (error) {
+      return res.status(401).json({ error: 'INVALID_TOKEN' });
+    }
 
 }
 
-export async function tokenVerification(req: Request, res: Response, next: Function) {
+export async function tokenVerification(req: CustomRequest, res: Response, next: Function) {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'TOKEN_NOT_FOUND_IN_HEADER' });
@@ -55,8 +67,11 @@ export async function tokenVerification(req: Request, res: Response, next: Funct
   
             if (tokenIsValid) {
               const accessToken = await ATG.generate(userId);
-  
-                res.setHeader('Authorization', `Bearer ${accessToken}`);
+                if (!accessToken || !accessToken?.user) {
+                  return res.status(401).json({ error: 'ACCESS_TOKEN_NOT_GENERATED_PROPERLY' });
+                }
+                req.user = accessToken?.user;
+                res.setHeader('Authorization', `Bearer ${accessToken?.accessToken}`);
                 return next();
               } else {
                 return res.status(404).json({ error: 'USER_NOT_FOUND' });

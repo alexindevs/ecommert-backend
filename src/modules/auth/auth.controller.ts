@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import AuthService from './auth.service';
+import logger from '../../utils/logger';
+import { CustomRequest } from '../../middleware/auth.middleware';
 
 class AuthController {
   private authService: AuthService;
@@ -21,9 +23,13 @@ class AuthController {
   loginUser = async (req: Request, res: Response): Promise<void> => {
     try {
       const { identifier, password } = req.body;
+      if (!identifier || !password) {
+        throw new Error('Please provide an identifier and password');
+      }
       const result = await this.authService.loginUser(identifier, password);
       res.status(200).json(result);
     } catch (error: any) {
+      logger.error(error.message, error);
       res.status(401).json({ error: error.message });
     }
   };
@@ -38,8 +44,12 @@ class AuthController {
     }
   };
 
-  getUserById = async (req: Request, res: Response): Promise<void> => {
+  getUserById = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
+      if (!user?.isAdmin && user?.id !== Number(req.params.userId)) {
+        throw new Error('You are not authorized to access this user');
+      }
       const userId = req.params.userId;
       const result = await this.authService.getUserById(Number(userId));
       if (result) {
@@ -52,8 +62,12 @@ class AuthController {
     }
   };
 
-  updateUser = async (req: Request, res: Response): Promise<void> => {
+  updateUser = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
+      if (!user?.isAdmin && user?.id !== Number(req.params.userId)) {
+        throw new Error('You are not authorized to access this user');
+      }
       const userId = req.params.userId;
       const updatedData = req.body;
       const result = await this.authService.updateUser(Number(userId), updatedData);
@@ -67,8 +81,12 @@ class AuthController {
     }
   };
 
-  deleteUser = async (req: Request, res: Response): Promise<void> => {
+  deleteUser = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
+      if (!user?.isAdmin && user?.id !== Number(req.params.userId)) {
+        throw new Error('You are not authorized to access this user');
+      }
       const userId = req.params.userId;
       const result = await this.authService.deleteUser(Number(userId));
       if (result) {
@@ -81,8 +99,12 @@ class AuthController {
     }
   };
 
-  changePassword = async (req: Request, res: Response): Promise<void> => {
+  changePassword = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
+      if (!user?.isAdmin && user?.id !== Number(req.params.userId)) {
+        throw new Error('You are not authorized to access this user');
+      }
       const userId = req.params.userId;
       const { oldPassword, newPassword } = req.body;
       const result = await this.authService.changePassword(Number(userId), oldPassword, newPassword);
@@ -110,6 +132,9 @@ class AuthController {
     try {
       const userId = req.params.userId;
       const { token, newPassword } = req.body;
+      if (!userId || !token || !newPassword) {
+        throw new Error('Please provide an userId in params, token, and newPassword');
+      }
       const result = await this.authService.resetPassword(Number(userId), token, newPassword);
       if (result) {
         res.status(200).json(result);
@@ -144,6 +169,15 @@ class AuthController {
       } else {
         res.status(404).json({ error: 'User not found' });
       }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  fetchBlockedUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.authService.fetchBlockedUsers();
+      res.status(200).json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
